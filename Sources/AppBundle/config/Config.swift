@@ -41,6 +41,8 @@ struct Config: Copyable {
     var startAtLogin: Bool = false
     var automaticallyUnhideMacosHiddenApps: Bool = false
     var accordionPadding: Int = 30
+    var accordionPaddingRoot: Int? = nil
+    var accordionPaddingRootEdges: Bool = true
     var enableNormalizationOppositeOrientationForNestedContainers: Bool = true
     var execOnWorkspaceChange: [String] = [] // todo deprecate
     var keyMapping = KeyMapping()

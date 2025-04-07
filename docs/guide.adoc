@@ -281,7 +281,14 @@ Just like in a `tiles` layout, you can use the xref:commands.adoc#focus[focus] c
 You can navigate the windows in an `h_accordion` by using the `focus (left|right)` command.
 While in a `v_accordion`, you can navigate the windows using the `focus (up|down)` command.
 
-Accordion padding is configurable via `accordion-padding` option.
+Accordion padding is configurable via following options:
+
+* `accordion-padding` - Default padding size for all containers
+* `accordion-padding-root` - Optional custom padding size for root container (if not set, uses `accordion-padding` value)
+* `accordion-padding-root-edges` - Controls edge padding behavior for root container only:
+** When `true` (default): First element has no left padding, last element has no right padding
+** When `false`: All elements in root container have equal padding on both sides
+** Note: Non-root containers always have padding for first and last elements
 
 [#normalization]
 === Normalization

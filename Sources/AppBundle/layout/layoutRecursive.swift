@@ -55,11 +55,13 @@ private extension TreeNode {
 private struct LayoutContext {
     let workspace: Workspace
     let resolvedGaps: ResolvedGaps
+    var isRoot: Bool
 
     @MainActor
-    init(_ workspace: Workspace) {
+    init(_ workspace: Workspace, isRoot: Bool = true) {
         self.workspace = workspace
         self.resolvedGaps = ResolvedGaps(gaps: config.gaps, monitor: workspace.workspaceMonitor)
+        self.isRoot = isRoot
     }
 }
 
@@ -109,6 +111,8 @@ private extension TilingContainer {
             // 3. Multiple children. Layout child in the middle
             // 4. Single child   let rawGap = gaps.inner.get(orientation).toDouble()
             let gap = rawGap - (i == 0 ? rawGap / 2 : 0) - (i == lastIndex ? rawGap / 2 : 0)
+            var childContext = context
+            childContext.isRoot = false
             child.layoutRecursive(
                 i == 0 ? point : point.addingOffset(orientation, rawGap / 2),
                 width: orientation == .h ? child.hWeight - gap : width,
@@ -119,7 +123,7 @@ private extension TilingContainer {
                     width: orientation == .h ? child.hWeight : width,
                     height: orientation == .v ? child.vWeight : height
                 ),
-                context
+                childContext
             )
             virtualPoint = orientation == .h ? virtualPoint.addingXOffset(child.hWeight) : virtualPoint.addingYOffset(child.vWeight)
             point = orientation == .h ? point.addingXOffset(child.hWeight) : point.addingYOffset(child.vWeight)
@@ -129,14 +133,15 @@ private extension TilingContainer {
     func layoutAccordion(_ point: CGPoint, width: CGFloat, height: CGFloat, virtual: Rect, _ context: LayoutContext) {
         guard let mruIndex: Int = mostRecentChild?.ownIndexOrNil else { return }
         for (index, child) in children.enumerated() {
-            let padding = CGFloat(config.accordionPadding)
+            let padding = CGFloat(context.isRoot && config.accordionPaddingRoot != nil ? config.accordionPaddingRoot! : config.accordionPadding)
             let (lPadding, rPadding): (CGFloat, CGFloat) = switch index {
                 case 0 where children.count == 1: (0, 0)
-                case 0:                           (0, padding)
-                case children.indices.last:       (padding, 0)
-                case mruIndex - 1:                (0, 2 * padding)
-                case mruIndex + 1:                (2 * padding, 0)
-                default:                          (padding, padding)
+                case 0 where !context.isRoot || config.accordionPaddingRootEdges: (0, padding)
+                case children.indices.last where !context.isRoot || config.accordionPaddingRootEdges:
+                    (padding, 0)
+                case mruIndex - 1: (0, 2 * padding)
+                case mruIndex + 1: (2 * padding, 0)
+                default: (padding, padding)
             }
             switch orientation {
                 case .h:
@@ -145,7 +150,7 @@ private extension TilingContainer {
                         width: width - rPadding - lPadding,
                         height: height,
                         virtual: virtual,
-                        context
+                        LayoutContext(context.workspace, isRoot: false)
                     )
                 case .v:
                     child.layoutRecursive(
@@ -153,7 +158,7 @@ private extension TilingContainer {
                         width: width,
                         height: height - lPadding - rPadding,
                         virtual: virtual,
-                        context
+                        LayoutContext(context.workspace, isRoot: false)
                     )
             }
         }

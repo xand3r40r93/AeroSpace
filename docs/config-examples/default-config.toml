@@ -23,6 +23,15 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # You can set 0 to disable the padding feature
 accordion-padding = 30
 
+# Optional custom padding value for root container (defaults to accordion-padding if not set)
+accordion-padding-root = 30
+
+# Controls whether root container should apply padding to the first and last elements
+# When true: First element has no left padding, last element has no right padding
+# When false: All elements have equal padding on both sides
+# Note: Non-root containers always have padding for first and last elements
+accordion-padding-root-edges = true
+
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
 
